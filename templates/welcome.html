@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KINETIX 3D — Mulai Transformasi Tubuh Anda</title>
+
+  <script>
+    if ((localStorage.getItem('kinetix_theme') || 'dark') === 'dark') {
+      document.documentElement.classList.add('dark');
+    }
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Poppins', 'sans-serif'] },
+          colors: {
+            abyss: '#06131A',
+            toska: '#14B8A6',
+            toskaBright: '#2DD4BF',
+            ocean: '#0284C7',
+            coral: '#F97316'
+          }
+        }
+      }
+    };
+  </script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    :root {
+      --glass-bg: rgba(255, 255, 255, 0.85);
+      --glass-border: rgba(13, 148, 136, 0.14);
+      --glass-shadow: 0 20px 48px -18px rgba(15, 41, 51, 0.14);
+      --grid-line: rgba(13, 148, 136, 0.075);
+      --bg-mesh: radial-gradient(circle at 12% 18%, rgba(20,184,166,0.20), transparent 44%),
+                 radial-gradient(circle at 86% 80%, rgba(2,132,199,0.16), transparent 46%),
+                 radial-gradient(circle at 55% 12%, rgba(249,115,22,0.08), transparent 38%),
+                 linear-gradient(145deg, #F0FDFA 0%, #ECFEFF 50%, #F0F9FF 100%);
+    }
+    html.dark {
+      --glass-bg: rgba(11, 31, 42, 0.76);
+      --glass-border: rgba(45, 212, 191, 0.14);
+      --glass-shadow: 0 24px 56px -20px rgba(0, 0, 0, 0.78);
+      --grid-line: rgba(45, 212, 191, 0.085);
+      --bg-mesh: radial-gradient(circle at 14% 20%, rgba(20,184,166,0.24), transparent 45%),
+                 radial-gradient(circle at 86% 78%, rgba(2,132,199,0.24), transparent 48%),
+                 radial-gradient(circle at 55% 95%, rgba(249,115,22,0.10), transparent 40%),
+                 linear-gradient(150deg, #040D12 0%, #071A24 52%, #08202E 100%);
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: var(--bg-mesh);
+    }
+
+    .gym-grid {
+      background-image:
+        linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+        linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+      background-size: 46px 46px;
+      mask-image: radial-gradient(ellipse 85% 75% at 50% 50%, #000 45%, transparent 100%);
+      -webkit-mask-image: radial-gradient(ellipse 85% 75% at 50% 50%, #000 45%, transparent 100%);
+    }
+
+    .kinetic-beam {
+      background: linear-gradient(115deg, transparent 32%, rgba(20,184,166,0.12) 48%, rgba(2,132,199,0.10) 56%, transparent 68%);
+      transform: skewY(-10deg);
+    }
+
+    .ecg-path {
+      stroke-dasharray: 1200;
+      stroke-dashoffset: 1200;
+      animation: ecgSweep 5.5s linear infinite;
+    }
+    @keyframes ecgSweep {
+      0%   { stroke-dashoffset: 1200; opacity: 0.2; }
+      20%  { opacity: 0.8; }
+      85%  { opacity: 0.8; }
+      100% { stroke-dashoffset: -1200; opacity: 0.15; }
+    }
+
+    @keyframes spinSlow   { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    @keyframes driftFloat { 0%, 100% { transform: translateY(0px) rotate(0deg); } 50% { transform: translateY(-14px) rotate(6deg); } }
+    @keyframes driftAlt   { 0%, 100% { transform: translateY(0px) rotate(0deg); } 50% { transform: translateY(12px) rotate(-6deg); } }
+
+    .spin-plate { animation: spinSlow 28s linear infinite; }
+    .float-slow { animation: driftFloat 6.5s ease-in-out infinite; }
+    .float-alt  { animation: driftAlt 7.5s ease-in-out infinite; }
+
+    .glass {
+      background: var(--glass-bg);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border: 1px solid var(--glass-border);
+      box-shadow: var(--glass-shadow);
+    }
+    .toska-text {
+      background: linear-gradient(95deg, #0D9488 0%, #14B8A6 45%, #0284C7 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    html.dark .toska-text {
+      background: linear-gradient(95deg, #2DD4BF 0%, #14B8A6 48%, #38BDF8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .btn-gradient {
+      background: linear-gradient(135deg, #0D9488 0%, #14B8A6 48%, #0284C7 100%);
+      transition: transform .22s ease, box-shadow .22s ease;
+    }
+    .btn-gradient:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 14px 32px rgba(20, 184, 166, 0.42);
+    }
+
+    @keyframes fadeDown  { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeUp    { from { opacity: 0; transform: translateY(28px); }  to { opacity: 1; transform: translateY(0); } }
+    @keyframes zoomRight { from { opacity: 0; transform: translateX(32px) scale(0.95); } to { opacity: 1; transform: translateX(0) scale(1); } }
+
+    .anim-nav   { opacity: 0; animation: fadeDown .6s cubic-bezier(.22,1,.36,1) .05s forwards; }
+    .anim-up-1  { opacity: 0; animation: fadeUp .65s cubic-bezier(.22,1,.36,1) .14s forwards; }
+    .anim-up-2  { opacity: 0; animation: fadeUp .65s cubic-bezier(.22,1,.36,1) .24s forwards; }
+    .anim-up-3  { opacity: 0; animation: fadeUp .65s cubic-bezier(.22,1,.36,1) .34s forwards; }
+    .anim-up-4  { opacity: 0; animation: fadeUp .65s cubic-bezier(.22,1,.36,1) .44s forwards; }
+    .anim-up-5  { opacity: 0; animation: fadeUp .65s cubic-bezier(.22,1,.36,1) .54s forwards; }
+    .anim-photo { opacity: 0; animation: zoomRight .8s cubic-bezier(.22,1,.36,1) .24s forwards; }
+  </style>
+</head>
+<body class="min-h-screen text-slate-800 dark:text-slate-100 flex flex-col justify-between overflow-x-hidden relative">
+
+  <!-- ============ FITNESS BACKGROUND SCENE (TOSKA & OCEAN) ============ -->
+  <div class="fixed inset-0 pointer-events-none overflow-hidden -z-10" aria-hidden="true">
+    <div class="absolute inset-0 gym-grid"></div>
+    <div class="absolute -inset-x-20 top-1/4 h-72 kinetic-beam"></div>
+
+    <div class="absolute inset-0 flex items-center justify-center select-none overflow-hidden">
+      <span class="text-[18vw] font-black italic tracking-tighter uppercase text-teal-900/[0.04] dark:text-toskaBright/[0.045] -rotate-6 whitespace-nowrap">
+        KINETIX 3D
+      </span>
+    </div>
+
+    <!-- Gelombang Detak Jantung ECG -->
+    <svg class="absolute inset-x-0 top-[54%] w-full h-36 opacity-55 dark:opacity-70" viewBox="0 0 1200 140" preserveAspectRatio="none" fill="none">
+      <defs>
+        <linearGradient id="ecgGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#14B8A6" stop-opacity="0" />
+          <stop offset="30%" stop-color="#2DD4BF" stop-opacity="0.95" />
+          <stop offset="68%" stop-color="#0EA5E9" stop-opacity="0.95" />
+          <stop offset="88%" stop-color="#F97316" stop-opacity="0.7" />
+          <stop offset="100%" stop-color="#0284C7" stop-opacity="0" />
+        </linearGradient>
+      </defs>
+      <path class="ecg-path" stroke="url(#ecgGrad)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+            d="M0,75 L220,75 L250,75 L270,35 L292,115 L314,18 L338,95 L358,75 L610,75 L635,75 L655,40 L675,112 L696,22 L718,92 L738,75 L960,75 L985,42 L1005,110 L1026,24 L1048,92 L1068,75 L1200,75" />
+    </svg>
+
+    <!-- Piringan Barbel Berputar -->
+    <div class="parallax-el absolute -top-16 -right-16 w-72 h-72 opacity-20 dark:opacity-25 text-teal-600 dark:text-toskaBright" data-depth="18">
+      <svg class="w-full h-full spin-plate" viewBox="0 0 200 200" fill="none" stroke="currentColor">
+        <circle cx="100" cy="100" r="88" stroke-width="2.5" stroke-dasharray="10 6" />
+        <circle cx="100" cy="100" r="68" stroke-width="1.5" />
+        <circle cx="100" cy="100" r="24" stroke-width="2.5" />
+        <rect x="92" y="20" width="16" height="22" rx="6" stroke-width="1.8" />
+        <rect x="92" y="158" width="16" height="22" rx="6" stroke-width="1.8" />
+        <rect x="20" y="92" width="22" height="16" rx="6" stroke-width="1.8" />
+        <rect x="158" y="92" width="22" height="16" rx="6" stroke-width="1.8" />
+      </svg>
+    </div>
+
+    <!-- Dumbbell Wireframe -->
+    <div class="parallax-el absolute bottom-20 -left-10 w-56 h-56 opacity-20 dark:opacity-25 text-sky-600 dark:text-sky-400" data-depth="-22">
+      <svg class="w-full h-full float-slow" viewBox="0 0 200 200" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+        <g transform="rotate(-28 100 100)">
+          <rect x="28" y="65" width="18" height="70" rx="6" />
+          <rect x="48" y="52" width="20" height="96" rx="6" />
+          <line x1="68" y1="100" x2="132" y2="100" stroke-width="6" />
+          <rect x="132" y="52" width="20" height="96" rx="6" />
+          <rect x="154" y="65" width="18" height="70" rx="6" />
+        </g>
+      </svg>
+    </div>
+
+    <!-- Kettlebell & Hex -->
+    <div class="parallax-el hidden lg:block absolute top-28 left-[10%] w-28 h-28 opacity-20 dark:opacity-30 text-teal-500" data-depth="14">
+      <svg class="w-full h-full float-alt" viewBox="0 0 120 120" fill="none" stroke="currentColor" stroke-width="2.2">
+        <path d="M40 42 C40 20, 80 20, 80 42" />
+        <circle cx="60" cy="72" r="32" />
+        <polygon points="60,52 76,62 76,82 60,92 44,82 44,62" stroke-dasharray="4 3" />
+      </svg>
+    </div>
+
+    <div class="absolute top-1/3 left-1/3 w-80 h-80 bg-toska/15 rounded-full blur-3xl"></div>
+    <div class="absolute bottom-10 right-1/4 w-96 h-96 bg-ocean/15 rounded-full blur-3xl"></div>
+  </div>
+
+  <!-- TOP BAR: Kiri (Dark/Light) | Tengah (Logo Aplikasi) | Kanan (Skip) -->
+  <header class="w-full max-w-6xl mx-auto px-5 sm:px-8 pt-6 pb-2 flex items-center justify-between anim-nav">
+    <button type="button" onclick="toggleTheme()" class="glass px-3.5 py-2 rounded-2xl flex items-center gap-2 text-xs font-bold hover:border-toska transition">
+      <i data-lucide="sun" class="w-4 h-4 text-amber-400 hidden dark:inline"></i>
+      <i data-lucide="moon" class="w-4 h-4 text-teal-600 inline dark:hidden"></i>
+      <span class="hidden sm:inline dark:hidden">Dark</span>
+      <span class="hidden sm:dark:inline">Light</span>
+    </button>
+
+    <div class="flex items-center gap-2.5 glass px-5 py-2 rounded-2xl">
+      <div class="w-8 h-8 rounded-xl btn-gradient flex items-center justify-center shadow">
+        <i data-lucide="activity" class="w-4 h-4 text-white"></i>
+      </div>
+      <span class="font-extrabold text-base sm:text-lg tracking-tight">KINETIX <span class="toska-text">3D</span></span>
+    </div>
+
+    <a href="/auth" class="glass px-4 py-2 rounded-2xl text-xs sm:text-sm font-bold text-slate-600 dark:text-slate-300 hover:border-toska hover:text-toska transition">
+      Skip
+    </a>
+  </header>
+
+  <!-- MAIN HERO -->
+  <main class="w-full max-w-6xl mx-auto px-5 sm:px-8 py-8 lg:py-10 flex-1 flex items-center">
+    <div class="w-full grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+
+      <!-- Kolom Kiri -->
+      <div class="lg:col-span-6 space-y-5">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-toska/15 border border-toska/30 text-teal-700 dark:text-toskaBright text-xs font-bold anim-up-1">
+          <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+          <span>3D Smart Workout & Muscle Lab</span>
+        </div>
+
+        <div class="space-y-1">
+          <h1 class="text-4xl sm:text-5xl xl:text-6xl font-black tracking-tight leading-[1.08] anim-up-1">Train Smarter.</h1>
+          <h2 class="text-4xl sm:text-5xl xl:text-6xl font-black tracking-tight leading-[1.08] toska-text anim-up-2">Track in 3D.</h2>
+          <h3 class="text-3xl sm:text-4xl xl:text-5xl font-extrabold tracking-tight leading-[1.12] text-slate-700 dark:text-slate-200 anim-up-3">Unleash Power.</h3>
+        </div>
+
+        <p class="text-sm sm:text-base text-slate-600 dark:text-slate-300 leading-relaxed max-w-lg anim-up-4">
+          “Setiap repetisi adalah investasi untuk versi terkuat dirimu.” Pantau pemulihan otot lewat anatomi 3D interaktif, hitung volume angkatan, dan pecahkan Personal Record setiap minggu.
+        </p>
+
+        <div class="pt-2 flex flex-wrap items-center gap-3 anim-up-5">
+          <a href="/auth?mode=signup" class="btn-gradient text-white px-7 py-4 rounded-2xl font-bold text-sm sm:text-base inline-flex items-center gap-3 shadow-xl group">
+            <span>Get Started</span>
+            <i data-lucide="arrow-right" class="w-5 h-5 transition-transform duration-200 group-hover:translate-x-1.5"></i>
+          </a>
+          <a href="/auth" class="glass px-6 py-4 rounded-2xl font-semibold text-sm hover:border-toska transition">
+            Masuk Akun
+          </a>
+        </div>
+      </div>
+
+      <!-- Kolom Kanan: Foto Satu Orang Lagi Olahraga -->
+      <div class="lg:col-span-6 flex justify-center lg:justify-end anim-photo">
+        <div class="relative w-full max-w-md aspect-[4/5] rounded-[2.2rem] overflow-hidden glass p-2.5">
+          <div class="relative w-full h-full rounded-[1.7rem] overflow-hidden bg-gradient-to-br from-[#06131A] via-[#0B2936] to-[#08202E]">
+            <img
+              src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=900&q=80"
+              alt="Atlet sedang berolahraga"
+              class="w-full h-full object-cover object-center"
+              onerror="this.style.display='none'"
+            />
+            <div class="absolute inset-0 bg-gradient-to-t from-[#041017]/92 via-[#061822]/25 to-transparent"></div>
+
+            <div class="absolute top-4 right-4 px-3.5 py-2 rounded-2xl bg-[#041017]/75 backdrop-blur-md border border-toskaBright/40 text-white flex items-center gap-2 float-slow">
+              <span class="w-2.5 h-2.5 rounded-full bg-toskaBright animate-pulse"></span>
+              <span class="text-xs font-bold">3D Muscle Heatmap</span>
+            </div>
+
+            <div class="absolute bottom-5 inset-x-5 text-white">
+              <p class="text-[11px] uppercase tracking-widest text-toskaBright font-bold">Real-Time Biomechanics</p>
+              <p class="text-lg font-extrabold leading-snug mt-0.5">Push Limits, Measure Every Rep</p>
+              <div class="flex items-center gap-4 mt-3 text-xs text-slate-200">
+                <span class="flex items-center gap-1"><i data-lucide="flame" class="w-3.5 h-3.5 text-coral"></i> 650+ kcal</span>
+                <span class="flex items-center gap-1"><i data-lucide="dumbbell" class="w-3.5 h-3.5 text-toskaBright"></i> 3D Anatomy</span>
+                <span class="flex items-center gap-1"><i data-lucide="trophy" class="w-3.5 h-3.5 text-amber-400"></i> Auto PR</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- PANDUAN KEGUNAAN FITUR UNTUK USER BARU BELUM TERDATA -->
+  <section id="panduan-fitur" class="w-full max-w-6xl mx-auto px-5 sm:px-8 pb-8 anim-up-5">
+    <div class="glass rounded-3xl p-6 sm:p-7">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-5">
+        <div>
+          <span class="text-[11px] font-bold uppercase tracking-widest text-teal-700 dark:text-toskaBright">Panduan Pengguna Baru</span>
+          <h3 class="text-lg sm:text-xl font-extrabold mt-0.5">Kenali Kegunaan Setiap Fitur KINETIX 3D</h3>
+        </div>
+        <a href="/auth?mode=signup" class="text-xs font-bold text-teal-700 dark:text-toskaBright hover:underline">
+          Daftar Gratis untuk Mulai →
+        </a>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div class="p-4 rounded-2xl bg-white/60 dark:bg-[#06131A]/65 border border-toska/20">
+          <div class="w-9 h-9 rounded-xl bg-toska/15 text-teal-700 dark:text-toskaBright flex items-center justify-center mb-2.5">
+            <i data-lucide="box" class="w-5 h-5"></i>
+          </div>
+          <h4 class="font-bold text-sm">1. 3D Muscle Lab</h4>
+          <p class="text-xs text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">Putar tubuh 3D 360° dan klik tiap otot untuk melihat status pemulihan (Fresh, Recovery, Fatigued) serta simulasi gerakan.</p>
+        </div>
+
+        <div class="p-4 rounded-2xl bg-white/60 dark:bg-[#06131A]/65 border border-toska/20">
+          <div class="w-9 h-9 rounded-xl bg-ocean/15 text-sky-600 dark:text-sky-400 flex items-center justify-center mb-2.5">
+            <i data-lucide="layers" class="w-5 h-5"></i>
+          </div>
+          <h4 class="font-bold text-sm">2. Program & Split Latihan</h4>
+          <p class="text-xs text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">Tersedia jadwal siap pakai (Push/Pull/Legs, Upper/Lower, Full Body, Home HIIT) yang bisa langsung dicatat dengan 1 klik.</p>
+        </div>
+
+        <div class="p-4 rounded-2xl bg-white/60 dark:bg-[#06131A]/65 border border-toska/20">
+          <div class="w-9 h-9 rounded-xl bg-coral/15 text-coral flex items-center justify-center mb-2.5">
+            <i data-lucide="clipboard-list" class="w-5 h-5"></i>
+          </div>
+          <h4 class="font-bold text-sm">3. Workout Logger & Auto PR</h4>
+          <p class="text-xs text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">Catat set, repetisi, dan beban. Sistem otomatis menghitung total volume, kalori terbakar, streak, dan rekor PR tertinggi.</p>
+        </div>
+
+        <div class="p-4 rounded-2xl bg-white/60 dark:bg-[#06131A]/65 border border-toska/20">
+          <div class="w-9 h-9 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mb-2.5">
+            <i data-lucide="timer" class="w-5 h-5"></i>
+          </div>
+          <h4 class="font-bold text-sm">4. HIIT Timer, 1RM & Plate</h4>
+          <p class="text-xs text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">Timer istirahat & interval bersuara, kalkulator kekuatan maksimal 1RM, serta panduan susunan piringan beban barbel.</p>
+        </div>
+
+        <div class="p-4 rounded-2xl bg-white/60 dark:bg-[#06131A]/65 border border-toska/20">
+          <div class="w-9 h-9 rounded-xl bg-toska/15 text-teal-700 dark:text-toskaBright flex items-center justify-center mb-2.5">
+            <i data-lucide="shopping-bag" class="w-5 h-5"></i>
+          </div>
+          <h4 class="font-bold text-sm">5. Body TDEE & Toko Kalsium</h4>
+          <p class="text-xs text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">Hitung BMI/TDEE/makro harian, pantau grafik berat badan, dan beli minuman kalsium tulang yang otomatis menambah hidrasi.</p>
+        </div>
+
+        <div class="p-4 rounded-2xl bg-white/60 dark:bg-[#06131A]/65 border border-toska/20">
+          <div class="w-9 h-9 rounded-xl bg-ocean/15 text-sky-600 dark:text-sky-400 flex items-center justify-center mb-2.5">
+            <i data-lucide="bot" class="w-5 h-5"></i>
+          </div>
+          <h4 class="font-bold text-sm">6. AI Coach & Live CS</h4>
+          <p class="text-xs text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">Tanya rekomendasi otot yang siap dilatih, target kalori, atau konsultasi langsung dengan Customer Service 24/7.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BOTTOM BAR: User Join & Foto Profil -->
+  <footer class="w-full max-w-6xl mx-auto px-5 sm:px-8 pb-7 anim-up-5">
+    <div class="glass rounded-3xl px-5 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-4">
+        <div class="flex -space-x-3">
+          {% set palette = ['14B8A6', '0284C7', 'F97316', '0D9488', '0EA5E9', '10B981'] %}
+          {% for u in joined_users %}
+          <img
+            src="https://ui-avatars.com/api/?name={{ u.name | urlencode }}&background={{ palette[loop.index0 % 6] }}&color=ffffff&bold=true&size=96"
+            alt="{{ u.name }}"
+            title="{{ u.name }} (@{{ u.username }})"
+            class="w-10 h-10 rounded-full ring-2 ring-white dark:ring-abyss object-cover shadow"
+          />
+          {% endfor %}
+          {% if joined_users|length < 4 %}
+          <img src="https://ui-avatars.com/api/?name=Raka+Fit&background=0284C7&color=fff&bold=true&size=96" alt="Raka" class="w-10 h-10 rounded-full ring-2 ring-white dark:ring-abyss shadow" />
+          <img src="https://ui-avatars.com/api/?name=Dina+Run&background=14B8A6&color=fff&bold=true&size=96" alt="Dina" class="w-10 h-10 rounded-full ring-2 ring-white dark:ring-abyss shadow" />
+          <img src="https://ui-avatars.com/api/?name=Bima+Gym&background=F97316&color=fff&bold=true&size=96" alt="Bima" class="w-10 h-10 rounded-full ring-2 ring-white dark:ring-abyss shadow" />
+          {% endif %}
+        </div>
+        <div>
+          <p class="text-xs sm:text-sm font-extrabold">
+            <span class="text-teal-700 dark:text-toskaBright">{{ total_users }}</span> Atlet Terdaftar di Aplikasi Ini
+          </p>
+          <p class="text-[11px] text-slate-500 dark:text-slate-400">
+            Terbaru bergabung:
+            {% if joined_users %}{{ joined_users[0].name }}{% else %}Athlete Pro{% endif %}
+            & komunitas olahraga aktif lainnya
+          </p>
+        </div>
+      </div>
+
+      <a href="/auth?mode=signup" class="px-4 py-2 rounded-xl bg-toska/15 text-teal-700 dark:text-toskaBright hover:bg-toska hover:text-white text-xs font-bold transition shrink-0">
+        Gabung Sekarang →
+      </a>
+    </div>
+  </footer>
+
+  <script>
+    lucide.createIcons();
+
+    function toggleTheme() {
+      const isDark = document.documentElement.classList.toggle('dark');
+      localStorage.setItem('kinetix_theme', isDark ? 'dark' : 'light');
+    }
+
+    window.addEventListener('mousemove', (e) => {
+      const cx = (e.clientX / window.innerWidth - 0.5);
+      const cy = (e.clientY / window.innerHeight - 0.5);
+      document.querySelectorAll('.parallax-el').forEach(el => {
+        const d = Number(el.dataset.depth || 15);
+        el.style.transform = `translate3d(${cx * d}px, ${cy * d}px, 0)`;
+      });
+    });
+  </script>
+</body>
+</html>

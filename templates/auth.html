@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Masuk — KINETIX 3D Fitness</title>
+
+  <script>
+    if ((localStorage.getItem('kinetix_theme') || 'dark') === 'dark') {
+      document.documentElement.classList.add('dark');
+    }
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Poppins', 'sans-serif'] },
+          colors: {
+            abyss: '#06131A',
+            toska: '#14B8A6',
+            toskaBright: '#2DD4BF',
+            ocean: '#0284C7',
+            coral: '#F97316'
+          }
+        }
+      }
+    };
+  </script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    :root {
+      --glass-bg: rgba(255, 255, 255, 0.88);
+      --glass-border: rgba(13, 148, 136, 0.14);
+      --glass-shadow: 0 24px 55px -20px rgba(15, 41, 51, 0.16);
+      --input-bg: #F0FDFA;
+      --input-border: #99F6E4;
+      --input-text: #0F2933;
+      --grid-line: rgba(13, 148, 136, 0.075);
+      --bg-mesh: radial-gradient(circle at 18% 15%, rgba(20,184,166,0.20), transparent 44%),
+                 radial-gradient(circle at 84% 84%, rgba(2,132,199,0.18), transparent 46%),
+                 linear-gradient(145deg, #F0FDFA 0%, #ECFEFF 50%, #F0F9FF 100%);
+    }
+    html.dark {
+      --glass-bg: rgba(11, 31, 42, 0.80);
+      --glass-border: rgba(45, 212, 191, 0.15);
+      --glass-shadow: 0 26px 64px -22px rgba(0, 0, 0, 0.82);
+      --input-bg: rgba(5, 17, 24, 0.78);
+      --input-border: rgba(45, 212, 191, 0.22);
+      --input-text: #F0FDFA;
+      --grid-line: rgba(45, 212, 191, 0.085);
+      --bg-mesh: radial-gradient(circle at 16% 18%, rgba(20,184,166,0.24), transparent 45%),
+                 radial-gradient(circle at 85% 82%, rgba(2,132,199,0.24), transparent 48%),
+                 linear-gradient(150deg, #040D12 0%, #071A24 52%, #08202E 100%);
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: var(--bg-mesh);
+    }
+
+    .gym-grid {
+      background-image:
+        linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+        linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+      background-size: 46px 46px;
+      mask-image: radial-gradient(ellipse 85% 75% at 50% 50%, #000 45%, transparent 100%);
+      -webkit-mask-image: radial-gradient(ellipse 85% 75% at 50% 50%, #000 45%, transparent 100%);
+    }
+    .ecg-path {
+      stroke-dasharray: 1200;
+      stroke-dashoffset: 1200;
+      animation: ecgSweep 5.8s linear infinite;
+    }
+    @keyframes ecgSweep {
+      0%   { stroke-dashoffset: 1200; opacity: 0.2; }
+      20%  { opacity: 0.75; }
+      85%  { opacity: 0.75; }
+      100% { stroke-dashoffset: -1200; opacity: 0.15; }
+    }
+    @keyframes spinSlow   { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    @keyframes driftFloat { 0%, 100% { transform: translateY(0px) rotate(0deg); } 50% { transform: translateY(-14px) rotate(5deg); } }
+    @keyframes cardEnter  { from { opacity: 0; transform: translateY(28px) scale(0.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
+    @keyframes fadeUp     { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+
+    .spin-plate { animation: spinSlow 30s linear infinite; }
+    .float-slow { animation: driftFloat 6.5s ease-in-out infinite; }
+    .anim-card  { opacity: 0; animation: cardEnter .65s cubic-bezier(.22,1,.36,1) forwards; }
+    .anim-item  { opacity: 0; animation: fadeUp .55s cubic-bezier(.22,1,.36,1) forwards; }
+    .d-1 { animation-delay: .12s; }
+    .d-2 { animation-delay: .20s; }
+    .d-3 { animation-delay: .28s; }
+    .d-4 { animation-delay: .36s; }
+    .d-5 { animation-delay: .44s; }
+
+    .glass {
+      background: var(--glass-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      box-shadow: var(--glass-shadow);
+    }
+    .field-input {
+      background: var(--input-bg);
+      border: 1px solid var(--input-border);
+      color: var(--input-text);
+      transition: border-color .2s ease, box-shadow .2s ease;
+    }
+    .field-input:focus {
+      outline: none;
+      border-color: #14B8A6;
+      box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.22);
+    }
+    .btn-gradient {
+      background: linear-gradient(135deg, #0D9488 0%, #14B8A6 48%, #0284C7 100%);
+      transition: transform .2s ease, box-shadow .2s ease;
+    }
+    .btn-gradient:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 28px rgba(20, 184, 166, 0.40);
+    }
+    .toska-text {
+      background: linear-gradient(95deg, #0D9488 0%, #14B8A6 45%, #0284C7 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    html.dark .toska-text {
+      background: linear-gradient(95deg, #2DD4BF 0%, #14B8A6 48%, #38BDF8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+  </style>
+</head>
+<body class="min-h-screen text-slate-800 dark:text-slate-100 flex flex-col items-center justify-center p-4 sm:p-6 relative overflow-x-hidden">
+
+  <!-- ============ FITNESS BACKGROUND SCENE ============ -->
+  <div class="fixed inset-0 pointer-events-none overflow-hidden -z-10" aria-hidden="true">
+    <div class="absolute inset-0 gym-grid"></div>
+
+    <div class="absolute inset-0 flex items-center justify-center select-none overflow-hidden">
+      <span class="text-[20vw] font-black italic tracking-tighter uppercase text-teal-900/[0.035] dark:text-toskaBright/[0.04] -rotate-6 whitespace-nowrap">
+        WORKOUT 3D
+      </span>
+    </div>
+
+    <svg class="absolute inset-x-0 top-1/2 -translate-y-1/2 w-full h-36 opacity-50 dark:opacity-65" viewBox="0 0 1200 140" preserveAspectRatio="none" fill="none">
+      <defs>
+        <linearGradient id="ecgAuth" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#14B8A6" stop-opacity="0" />
+          <stop offset="30%" stop-color="#2DD4BF" stop-opacity="0.95" />
+          <stop offset="70%" stop-color="#0EA5E9" stop-opacity="0.95" />
+          <stop offset="100%" stop-color="#0284C7" stop-opacity="0" />
+        </linearGradient>
+      </defs>
+      <path class="ecg-path" stroke="url(#ecgAuth)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+            d="M0,75 L190,75 L210,38 L230,114 L252,20 L274,94 L294,75 L890,75 L912,40 L934,112 L955,22 L978,94 L998,75 L1200,75" />
+    </svg>
+
+    <div class="parallax-el absolute top-16 left-6 sm:left-16 w-48 h-48 opacity-20 dark:opacity-25 text-teal-600 dark:text-toskaBright" data-depth="18">
+      <svg class="w-full h-full float-slow" viewBox="0 0 200 200" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+        <g transform="rotate(-24 100 100)">
+          <rect x="28" y="65" width="18" height="70" rx="6" />
+          <rect x="48" y="52" width="20" height="96" rx="6" />
+          <line x1="68" y1="100" x2="132" y2="100" stroke-width="6" />
+          <rect x="132" y="52" width="20" height="96" rx="6" />
+          <rect x="154" y="65" width="18" height="70" rx="6" />
+        </g>
+      </svg>
+    </div>
+
+    <div class="parallax-el absolute -bottom-16 -right-12 w-72 h-72 opacity-20 dark:opacity-25 text-sky-600 dark:text-sky-400" data-depth="-20">
+      <svg class="w-full h-full spin-plate" viewBox="0 0 200 200" fill="none" stroke="currentColor">
+        <circle cx="100" cy="100" r="88" stroke-width="2.5" stroke-dasharray="10 6" />
+        <circle cx="100" cy="100" r="66" stroke-width="1.5" />
+        <circle cx="100" cy="100" r="22" stroke-width="2.5" />
+        <rect x="92" y="20" width="16" height="22" rx="6" stroke-width="1.8" />
+        <rect x="92" y="158" width="16" height="22" rx="6" stroke-width="1.8" />
+        <rect x="20" y="92" width="22" height="16" rx="6" stroke-width="1.8" />
+        <rect x="158" y="92" width="22" height="16" rx="6" stroke-width="1.8" />
+      </svg>
+    </div>
+
+    <div class="parallax-el hidden xl:flex items-center gap-2.5 glass px-4 py-2.5 rounded-2xl absolute top-28 right-16 float-slow" data-depth="12">
+      <span class="w-8 h-8 rounded-xl bg-coral/15 text-coral flex items-center justify-center"><i data-lucide="flame" class="w-4 h-4"></i></span>
+      <div><p class="text-[10px] text-slate-500 dark:text-slate-400">Daily Burn</p><p class="text-xs font-extrabold">650 kcal</p></div>
+    </div>
+
+    <div class="parallax-el hidden xl:flex items-center gap-2.5 glass px-4 py-2.5 rounded-2xl absolute bottom-28 left-16 float-slow" data-depth="-14">
+      <span class="w-8 h-8 rounded-xl bg-toska/15 text-toska flex items-center justify-center"><i data-lucide="dumbbell" class="w-4 h-4"></i></span>
+      <div><p class="text-[10px] text-slate-500 dark:text-slate-400">3D Muscle Lab</p><p class="text-xs font-extrabold">6 Muscle Zones</p></div>
+    </div>
+  </div>
+
+  <!-- Top Controls -->
+  <div class="fixed top-4 inset-x-4 sm:inset-x-6 flex items-center justify-between z-20 max-w-5xl mx-auto">
+    <a href="/welcome" class="glass px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 hover:border-toska transition">
+      <i data-lucide="arrow-left" class="w-4 h-4"></i>
+      <span>Kembali</span>
+    </a>
+    <button type="button" onclick="toggleTheme()" class="glass p-2.5 rounded-xl hover:border-toska transition">
+      <i data-lucide="sun" class="w-4 h-4 text-amber-400 hidden dark:inline"></i>
+      <i data-lucide="moon" class="w-4 h-4 text-teal-600 inline dark:hidden"></i>
+    </button>
+  </div>
+
+  <!-- Auth Card -->
+  <div class="w-full max-w-md glass rounded-[2rem] p-7 sm:p-9 anim-card my-14">
+
+    <div class="text-center anim-item d-1">
+      <div class="w-16 h-16 mx-auto rounded-2xl btn-gradient flex items-center justify-center shadow-xl mb-3">
+        <i data-lucide="activity" class="w-8 h-8 text-white"></i>
+      </div>
+      <p class="font-extrabold text-xl tracking-tight">KINETIX <span class="toska-text">3D</span></p>
+      <h1 id="auth-heading" class="text-xl sm:text-2xl font-bold mt-2">Create Your Account</h1>
+      <p id="auth-subheading" class="text-xs text-slate-500 dark:text-slate-400 mt-1">Masuk untuk melanjutkan progres latihan 3D Anda</p>
+    </div>
+
+    <div id="auth-error" class="hidden mt-5 px-3.5 py-2.5 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-500 dark:text-rose-400 text-xs font-medium"></div>
+
+    <form id="auth-form" class="mt-6 space-y-4 anim-item d-2">
+      <div id="signup-extra" class="hidden space-y-4">
+        <div>
+          <label class="block text-xs font-semibold mb-1.5 text-slate-600 dark:text-slate-300">Nama Lengkap</label>
+          <input id="f-name" type="text" placeholder="Contoh: Zacky Athlete" class="field-input w-full px-4 py-3 rounded-xl text-sm" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold mb-1.5 text-slate-600 dark:text-slate-300">Email</label>
+          <input id="f-email" type="email" placeholder="nama@email.com" class="field-input w-full px-4 py-3 rounded-xl text-sm" />
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold mb-1.5 text-slate-600 dark:text-slate-300">Username</label>
+        <input id="f-username" type="text" required placeholder="athlete" class="field-input w-full px-4 py-3 rounded-xl text-sm" />
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold mb-1.5 text-slate-600 dark:text-slate-300">Password</label>
+        <div class="relative">
+          <input id="f-password" type="password" required minlength="6" placeholder="••••••••" class="field-input w-full px-4 py-3 pr-11 rounded-xl text-sm" />
+          <button type="button" onclick="togglePass()" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-toska">
+            <i data-lucide="eye" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+
+      <button id="auth-submit-btn" type="submit" class="w-full btn-gradient text-white font-bold py-3.5 rounded-xl text-sm shadow-lg">
+        Sign In
+      </button>
+
+      <button id="demo-btn" type="button" onclick="fillDemo()" class="w-full py-2.5 rounded-xl border border-toska/40 text-teal-700 dark:text-toskaBright text-xs font-semibold hover:bg-toska/10 transition">
+        Gunakan Akun Demo (athlete / password123)
+      </button>
+    </form>
+
+    <!-- Divider: ———— login with ———— -->
+    <div class="flex items-center gap-3 my-6 anim-item d-3">
+      <div class="h-px flex-1 bg-teal-900/15 dark:bg-teal-400/20"></div>
+      <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">login with</span>
+      <div class="h-px flex-1 bg-teal-900/15 dark:bg-teal-400/20"></div>
+    </div>
+
+    <!-- Social Buttons: Google | Facebook | Apple -->
+    <div class="grid grid-cols-3 gap-3 anim-item d-4">
+      <button type="button" onclick="triggerSocial('google')" class="glass py-3 rounded-2xl flex flex-col items-center justify-center gap-1.5 hover:border-toska hover:-translate-y-0.5 transition">
+        <svg class="w-5 h-5" viewBox="0 0 24 24">
+          <path fill="#EA4335" d="M12 5.04c1.69 0 3.21.58 4.41 1.72l3.31-3.31C17.71 1.58 15.08.5 12 .5 7.45.5 3.53 3.11 1.64 6.91l3.87 3.01C6.43 7.09 8.99 5.04 12 5.04z"/>
+          <path fill="#4285F4" d="M23.49 12.27c0-.79-.07-1.55-.2-2.27H12v4.51h6.47c-.29 1.48-1.14 2.73-2.4 3.58l3.7 2.87c2.16-1.99 3.72-4.93 3.72-8.69z"/>
+          <path fill="#FBBC05" d="M5.51 14.08c-.24-.71-.38-1.48-.38-2.28s.14-1.57.38-2.28L1.64 6.51C.85 8.08.4 9.85.4 11.8s.45 3.72 1.24 5.29l3.87-3.01z"/>
+          <path fill="#34A853" d="M12 23.5c3.24 0 5.95-1.07 7.93-2.9l-3.7-2.87c-1.07.72-2.45 1.15-4.23 1.15-3.01 0-5.57-2.05-6.49-4.8l-3.87 3.01C3.53 20.89 7.45 23.5 12 23.5z"/>
+        </svg>
+        <span class="text-[11px] font-semibold">Google</span>
+      </button>
+
+      <button type="button" onclick="triggerSocial('facebook')" class="glass py-3 rounded-2xl flex flex-col items-center justify-center gap-1.5 hover:border-toska hover:-translate-y-0.5 transition">
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="#1877F2">
+          <path d="M24 12.07C24 5.41 18.63 0 12 0S0 5.41 0 12.07c0 6.02 4.39 11.01 10.13 11.93v-8.44H7.08v-3.49h3.05V9.41c0-3.02 1.79-4.69 4.54-4.69 1.31 0 2.69.24 2.69.24v2.96h-1.52c-1.49 0-1.96.93-1.96 1.89v2.26h3.33l-.53 3.49h-2.8V24C19.61 23.08 24 18.09 24 12.07z"/>
+        </svg>
+        <span class="text-[11px] font-semibold">Facebook</span>
+      </button>
+
+      <button type="button" onclick="triggerSocial('apple')" class="glass py-3 rounded-2xl flex flex-col items-center justify-center gap-1.5 hover:border-toska hover:-translate-y-0.5 transition">
+        <svg class="w-5 h-5 fill-slate-900 dark:fill-white" viewBox="0 0 24 24">
+          <path d="M16.365 1.43c0 1.14-.493 2.27-1.177 3.08-.744.9-1.99 1.57-2.987 1.57-.12 0-.23-.02-.3-.03-.01-.06-.04-.22-.04-.39 0-1.15.572-2.27 1.206-2.98.804-.94 2.142-1.64 3.248-1.68.03.13.05.28.05.43zm4.565 15.71c-.03.07-.463 1.58-1.518 3.12-.945 1.34-1.94 2.71-3.43 2.71-1.517 0-1.9-.88-3.63-.88-1.698 0-2.302.91-3.67.91-1.377 0-2.332-1.26-3.428-2.8-1.287-1.82-2.323-4.63-2.323-7.28 0-4.28 2.797-6.55 5.552-6.55 1.448 0 2.675.95 3.6.95.865 0 2.222-1.01 3.902-1.01.613 0 2.886.06 4.374 2.19-.13.09-2.383 1.37-2.383 4.19 0 3.26 2.854 4.42 2.955 4.45z"/>
+        </svg>
+        <span class="text-[11px] font-semibold">Apple</span>
+      </button>
+    </div>
+
+    <div class="mt-7 text-center text-xs sm:text-sm text-slate-500 dark:text-slate-400 anim-item d-5">
+      <span id="switch-prompt">No account? Create</span>
+      <button type="button" id="switch-btn" onclick="toggleAuthMode()" class="ml-1.5 font-extrabold toska-text hover:underline text-sm sm:text-base">
+        Sign Up
+      </button>
+    </div>
+  </div>
+
+  <!-- Branded Social Sign-In Modal -->
+  <div id="social-modal" class="hidden fixed inset-0 z-50 bg-[#040D12]/70 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="w-full max-w-sm glass rounded-3xl p-6 relative anim-card">
+      <button type="button" onclick="closeSocialModal()" class="absolute top-4 right-4 p-1.5 rounded-xl hover:bg-toska/10">
+        <i data-lucide="x" class="w-4 h-4"></i>
+      </button>
+
+      <div class="text-center mb-5">
+        <div id="sm-icon" class="w-12 h-12 mx-auto rounded-2xl flex items-center justify-center mb-3 shadow-lg"></div>
+        <h3 id="sm-title" class="text-lg font-extrabold">Masuk dengan Google</h3>
+        <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Pilih atau masukkan akun untuk melanjutkan ke KINETIX 3D</p>
+      </div>
+
+      <form id="social-modal-form" class="space-y-3.5">
+        <div>
+          <label class="block text-xs font-semibold mb-1 text-slate-500 dark:text-slate-400">Nama Akun</label>
+          <input id="sm-name" type="text" required class="field-input w-full px-3.5 py-2.5 rounded-xl text-sm" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold mb-1 text-slate-500 dark:text-slate-400">Email</label>
+          <input id="sm-email" type="email" required class="field-input w-full px-3.5 py-2.5 rounded-xl text-sm" />
+        </div>
+        <button id="sm-submit" type="submit" class="w-full py-3 rounded-xl font-bold text-sm text-white shadow-lg transition hover:opacity-95">
+          Lanjutkan
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    lucide.createIcons();
+    const params = new URLSearchParams(window.location.search);
+    let isSignup = params.get('mode') === 'signup';
+    let liveProviders = { google: false, facebook: false, apple: false };
+    let activeSocialProvider = 'google';
+
+    if (params.get('err')) showError(params.get('err'));
+    applyAuthMode();
+    fetch('/api/auth/providers').then(r => r.json()).then(d => { liveProviders = d; }).catch(() => {});
+
+    function toggleTheme() {
+      const isDark = document.documentElement.classList.toggle('dark');
+      localStorage.setItem('kinetix_theme', isDark ? 'dark' : 'light');
+    }
+    function togglePass() {
+      const inp = document.getElementById('f-password');
+      inp.type = inp.type === 'password' ? 'text' : 'password';
+    }
+    function toggleAuthMode() {
+      isSignup = !isSignup;
+      document.getElementById('auth-error').classList.add('hidden');
+      applyAuthMode();
+    }
+    function applyAuthMode() {
+      document.getElementById('signup-extra').classList.toggle('hidden', !isSignup);
+      document.getElementById('f-name').required = isSignup;
+      document.getElementById('f-email').required = isSignup;
+      document.getElementById('demo-btn').classList.toggle('hidden', isSignup);
+
+      document.getElementById('auth-heading').textContent = isSignup ? 'Create Your Account' : 'Welcome Back';
+      document.getElementById('auth-subheading').textContent = isSignup
+        ? 'Buat akun baru dan mulai lacak progres 3D Anda'
+        : 'Masuk untuk melanjutkan progres latihan 3D Anda';
+      document.getElementById('auth-submit-btn').textContent = isSignup ? 'Create Account' : 'Sign In';
+      document.getElementById('switch-prompt').textContent = isSignup ? 'Already have an account?' : 'No account? Create';
+      document.getElementById('switch-btn').textContent = isSignup ? 'Sign In' : 'Sign Up';
+    }
+    function showError(msg) {
+      const box = document.getElementById('auth-error');
+      box.textContent = msg;
+      box.classList.remove('hidden');
+    }
+    function fillDemo() {
+      document.getElementById('f-username').value = 'athlete';
+      document.getElementById('f-password').value = 'password123';
+    }
+
+    function triggerSocial(provider) {
+      if (liveProviders[provider]) { window.location.href = `/auth/oauth/${provider}`; return; }
+      openSocialModal(provider);
+    }
+
+    function openSocialModal(provider) {
+      activeSocialProvider = provider;
+      const meta = {
+        google: {
+          title: 'Lanjutkan dengan Google', bg: 'bg-white border border-slate-200', btn: 'bg-[#4285F4]',
+          defName: 'Zacky Google', defEmail: 'zacky.fit@gmail.com',
+          svg: '<svg class="w-6 h-6" viewBox="0 0 24 24"><path fill="#EA4335" d="M12 5.04c1.69 0 3.21.58 4.41 1.72l3.31-3.31C17.71 1.58 15.08.5 12 .5 7.45.5 3.53 3.11 1.64 6.91l3.87 3.01C6.43 7.09 8.99 5.04 12 5.04z"/><path fill="#4285F4" d="M23.49 12.27c0-.79-.07-1.55-.2-2.27H12v4.51h6.47c-.29 1.48-1.14 2.73-2.4 3.58l3.7 2.87c2.16-1.99 3.72-4.93 3.72-8.69z"/><path fill="#FBBC05" d="M5.51 14.08c-.24-.71-.38-1.48-.38-2.28s.14-1.57.38-2.28L1.64 6.51C.85 8.08.4 9.85.4 11.8s.45 3.72 1.24 5.29l3.87-3.01z"/><path fill="#34A853" d="M12 23.5c3.24 0 5.95-1.07 7.93-2.9l-3.7-2.87c-1.07.72-2.45 1.15-4.23 1.15-3.01 0-5.57-2.05-6.49-4.8l-3.87 3.01C3.53 20.89 7.45 23.5 12 23.5z"/></svg>'
+        },
+        facebook: {
+          title: 'Lanjutkan dengan Facebook', bg: 'bg-[#1877F2]', btn: 'bg-[#1877F2]',
+          defName: 'Zacky Facebook', defEmail: 'zacky.fit@facebook.com',
+          svg: '<svg class="w-6 h-6 fill-white" viewBox="0 0 24 24"><path d="M24 12.07C24 5.41 18.63 0 12 0S0 5.41 0 12.07c0 6.02 4.39 11.01 10.13 11.93v-8.44H7.08v-3.49h3.05V9.41c0-3.02 1.79-4.69 4.54-4.69 1.31 0 2.69.24 2.69.24v2.96h-1.52c-1.49 0-1.96.93-1.96 1.89v2.26h3.33l-.53 3.49h-2.8V24C19.61 23.08 24 18.09 24 12.07z"/></svg>'
+        },
+        apple: {
+          title: 'Sign in with Apple', bg: 'bg-slate-900 border border-slate-700', btn: 'bg-slate-900 dark:bg-white dark:text-slate-950',
+          defName: 'Zacky Apple', defEmail: 'zacky.fit@icloud.com',
+          svg: '<svg class="w-6 h-6 fill-white" viewBox="0 0 24 24"><path d="M16.365 1.43c0 1.14-.493 2.27-1.177 3.08-.744.9-1.99 1.57-2.987 1.57-.12 0-.23-.02-.3-.03-.01-.06-.04-.22-.04-.39 0-1.15.572-2.27 1.206-2.98.804-.94 2.142-1.64 3.248-1.68.03.13.05.28.05.43zm4.565 15.71c-.03.07-.463 1.58-1.518 3.12-.945 1.34-1.94 2.71-3.43 2.71-1.517 0-1.9-.88-3.63-.88-1.698 0-2.302.91-3.67.91-1.377 0-2.332-1.26-3.428-2.8-1.287-1.82-2.323-4.63-2.323-7.28 0-4.28 2.797-6.55 5.552-6.55 1.448 0 2.675.95 3.6.95.865 0 2.222-1.01 3.902-1.01.613 0 2.886.06 4.374 2.19-.13.09-2.383 1.37-2.383 4.19 0 3.26 2.854 4.42 2.955 4.45z"/></svg>'
+        }
+      }[provider];
+
+      const iconEl = document.getElementById('sm-icon');
+      iconEl.className = `w-12 h-12 mx-auto rounded-2xl flex items-center justify-center mb-3 shadow-lg ${meta.bg}`;
+      iconEl.innerHTML = meta.svg;
+      document.getElementById('sm-title').textContent = meta.title;
+      document.getElementById('sm-name').value = meta.defName;
+      document.getElementById('sm-email').value = meta.defEmail;
+      document.getElementById('sm-submit').className = `w-full py-3 rounded-xl font-bold text-sm text-white shadow-lg transition hover:opacity-95 ${meta.btn}`;
+      document.getElementById('social-modal').classList.remove('hidden');
+    }
+    function closeSocialModal() { document.getElementById('social-modal').classList.add('hidden'); }
+
+    document.getElementById('social-modal-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const res = await fetch('/api/auth/social', {
+        method: 'POST', credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          provider: activeSocialProvider,
+          name: document.getElementById('sm-name').value,
+          email: document.getElementById('sm-email').value
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) { closeSocialModal(); return showError(data.error || 'Gagal login sosial.'); }
+      window.location.replace('/');
+    });
+
+    document.getElementById('auth-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const url = isSignup ? '/api/auth/register' : '/api/auth/login';
+      const payload = isSignup
+        ? {
+            name: document.getElementById('f-name').value,
+            email: document.getElementById('f-email').value,
+            username: document.getElementById('f-username').value,
+            password: document.getElementById('f-password').value
+          }
+        : {
+            identifier: document.getElementById('f-username').value,
+            password: document.getElementById('f-password').value
+          };
+
+      const res = await fetch(url, {
+        method: 'POST', credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (!res.ok) return showError(data.error || 'Terjadi kesalahan.');
+      window.location.replace('/');
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      const cx = (e.clientX / window.innerWidth - 0.5);
+      const cy = (e.clientY / window.innerHeight - 0.5);
+      document.querySelectorAll('.parallax-el').forEach(el => {
+        const d = Number(el.dataset.depth || 15);
+        el.style.transform = `translate3d(${cx * d}px, ${cy * d}px, 0)`;
+      });
+    });
+  </script>
+<button type="button" onclick="document.getElementById('f-username').value='developer';document.getElementById('f-password').value='dev12345';" class="w-full py-2.5 rounded-xl border border-ocean/40 text-sky-700 dark:text-sky-400 text-xs font-semibold hover:bg-ocean/10 transition">
+     Gunakan Akun Developer (developer / dev12345)
+   </button>
+</body>
+</html>
